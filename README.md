@@ -1,5 +1,7 @@
 # California Wildfire Analysis and Prediction
 
+This repository contains a Jupyter Notebook that performs a comprehensive data mining project on California wildfires. The project aims to preprocess, merge, and analyze a diverse set of data to understand the factors contributing to wildfires and to build predictive models for wildfire size classification.
+
 ## Project Overview
 
 The goal of this project is to conduct a comprehensive data mining analysis on California wildfires to understand contributing factors and build predictive models for wildfire size classification. The project integrates diverse datasets, including wildfire records, historical temperatures, unemployment rates, and population statistics, to create a rich analytical base. A key focus is on addressing the significant class imbalance in the target variable (`FIRE_SIZE_CLASS`) using the SMOTE (Synthetic Minority Over-sampling Technique) to improve model performance.
@@ -8,12 +10,11 @@ The goal of this project is to conduct a comprehensive data mining analysis on C
 1. [Project Overview](#project-overview)
 2. [Dataset](#dataset)
 3. [Tools & Technologies](#tools--technologies)
-4. [Exploratory Data Analysis & Visualizations](#exploratory-data-analysis--visualizations)
-5. [Key Findings & Insights](#key-findings--insights)
-6. [Methodology](#methodology)
-7. [Setup & Usage](#setup--usage)
-8. [Project Structure](#project-structure)
-9. [Contact](#contact)
+4. [Key Findings & Insights](#key-findings--insights)
+5. [Methodology](#methodology)
+6. [Setup](#setup)
+7. [Project Structure](#project-structure)
+8. [Contact](#contact)
 
 ## Dataset
 The analysis consolidates data from four primary sources:
@@ -44,34 +45,63 @@ The analysis revealed several critical factors related to California wildfires:
 - **Feature Importance**: The Random Forest model identified **Population**, **Latitude**, **Longitude**, and **Average Temperature** as the most significant predictors of wildfire size class. This highlights the strong interplay between geographic, climatic, and demographic factors.
 
 ## Methodology
-The project follows a structured data mining workflow:
-1.  **Data Loading & Initial Cleaning**: Loads the four datasets and performs initial cleaning, including handling missing values and removing duplicates.
-2.  **Feature Engineering**:
-    *   Converts wildfire discovery dates from Julian format to standard datetime objects.
-    *   Extracts `MONTH`, `DAY_OF_WEEK`, and `PART_OF_DAY` as new features.
-3.  **Data Integration**: Merges the wildfire, temperature, unemployment, and population datasets into a single comprehensive DataFrame. Missing values introduced during joins are imputed using yearly means.
-4.  **Outlier Handling**: Normalizes numerical data using z-scores and removes outliers based on z-score thresholds and the Interquartile Range (IQR) method.
-5.  **Model Preparation**:
-    *   **Label Encoding**: Converts all categorical features into numerical format for modeling.
-    *   **Class Imbalance Handling**: Reduces the number of target classes to simplify the problem and applies **SMOTE (Synthetic Minority Over-sampling Technique)** on the training data to create a balanced dataset.
-    *   **Data Splitting**: Splits the data into stratified training (60%) and testing (40%) sets.
-6.  **Predictive Modeling**:
-    *   Builds and evaluates **Decision Tree** and **Random Forest** classifiers.
-    *   Performance is measured using accuracy, a detailed classification report (precision, recall, F1-score), and a confusion matrix.
 
-## Setup & Usage
-To replicate this project locally:
-1.  **Clone the repository:**
+### 1. Data Loading & Preprocessing
+- **Libraries**: Imports standard data science libraries including `pandas`, `numpy`, `matplotlib`, `seaborn`, and `sklearn`.
+- **Initial Loading**: Loads the four datasets into pandas DataFrames.
+- **Feature Engineering**:
+    - Converts the wildfire `DISCOVERY_DATE` from Julian format to a standard datetime object.
+    - Extracts new features like `MONTH`, `DAY_OF_WEEK`, and `PART_OF_DAY` from the discovery date and time.
+    - Drops original time/date columns after feature extraction.
+- **Initial Cleaning**:
+    - Handles missing values from the initial datasets.
+    - Removes duplicate records to ensure data quality.
+
+### 2. Exploratory Data Analysis (EDA)
+- **Summary Statistics**: Uses `describe()` to get a high-level statistical overview of the data.
+- **Visualizations**:
+    - Bar charts are used to visualize the frequency of fires by `PART_OF_DAY` and `MONTH`.
+    - Pie charts illustrate the distribution of wildfire causes (`STAT_CAUSE_DESCR`) and their contribution to the total area burned.
+
+### 3. Data Integration
+- **Filtering**: The temperature, unemployment, and population datasets are filtered to match the temporal (1992-2015) and geographical (California) scope of the wildfire data.
+- **Join Columns**: Composite keys (e.g., `Year-Month-County`) are created in each DataFrame to facilitate accurate merging.
+- **Merging**: The wildfire DataFrame is progressively merged with the temperature, unemployment, and population data, creating a single, comprehensive dataset.
+- **Post-Merge Cleaning**: Missing values introduced during the left joins (e.g., missing temperature or unemployment data for a specific month) are imputed using the yearly mean for that column. Population data is converted to a numeric type.
+
+### 4. Outlier Handling
+- A custom function is used to normalize numerical data using the z-score.
+- Outliers are then identified and removed using a combination of z-score thresholds and the Interquartile Range (IQR) method to create a more robust dataset for modeling.
+
+### 5. Model Preparation
+- **Label Encoding**: All categorical features (e.g., `STAT_CAUSE_DESCR`, `OWNER_DESCR`, `FIPS_NAME`) are converted into numerical representations using `sklearn.preprocessing.LabelEncoder`.
+- **Class Imbalance Handling**:
+    - The target variable, `FIRE_SIZE_CLASS`, is highly imbalanced. The notebook experiments with reducing the number of classes (from 7 down to 5, 3, and finally 2) to simplify the classification task.
+    - The **SMOTE (Synthetic Minority Over-sampling TEchnique)** is applied to the *training data* after splitting to create synthetic samples for the minority classes, resulting in a balanced dataset for model training.
+- **Data Splitting**: The dataset is split into training (60%) and testing (40%) sets using `train_test_split`, with stratification to maintain the class distribution in both sets.
+
+### 6. Predictive Modeling
+- **Models**: Several classification algorithms are implemented and evaluated:
+    - **Decision Tree Classifier**
+    - **Random Forest Classifier**
+- **Evaluation**: Each model's performance is assessed using:
+    - **Accuracy Score**: The proportion of correctly classified instances.
+    - **Classification Report**: Provides precision, recall, and F1-score for each class.
+    - **Confusion Matrix**: Visualizes the model's performance, showing correct vs. incorrect predictions for each class.
+- **Feature Importance**: The Random Forest model is used to extract and rank the importance of each feature in predicting the fire size class.
+
+## Setup
+
+1.  **Prerequisites**: Ensure you have Python and the following libraries installed:
     ```bash
-    git clone https://github.com/shrististha/investigating-wildfire-severity-using-data-mining-and-machine
-    cd investigating-wildfire-severity-using-data-mining-and-machine
+    pip install pandas numpy matplotlib seaborn scikit-learn imbalanced-learn mlxtend
     ```
-2.  **Set up a Python environment:**
-    ```bash
-    python -m venv env
-    source env/bin/activate  # On Windows: .\env\Scripts\activate
-    ```
-3.  **Execution**: Open and run the `Data_Mining_Project.ipynb` notebook. Cells should be run sequentially to ensure the data processing pipeline executes correctly. The notebook will generate analysis, visualizations, and model performance metrics.
+
+2.  **Dataset Location**: Place the four required CSV files in the same directory as the notebook or update the file paths in the data loading cells.
+
+3.  **Execution**: Run the Jupyter Notebook cells sequentially from top to bottom. The notebook is structured to be executed in order, as later cells depend on the transformations and DataFrames created in earlier ones.
+
+4.  **Output**: The notebook will generate various plots for EDA, and at the end, it will output the performance metrics and confusion matrices for the trained machine learning models. It also saves the final preprocessed and balanced training data (`train.csv`, `train3.csv`) and the corresponding test data (`test.csv`, `test3.csv`).
 
 ## Project Structure
 ```
